@@ -3,117 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>海賊パチンコ</title>
+    <title>おみくじ</title>
     <style>
-        body { text-align: center; background-color: #003366; color: white; }
-        canvas { background: url('pirate_background.jpg') no-repeat center center; background-size: cover; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            font-size: 20px;
+            padding: 10px;
+        }
+        #result {
+            font-size: 30px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>海賊パチンコ</h1>
-    <h2>スコア: <span id="score">0</span></h2>
-    <canvas id="pachinkoCanvas" width="400" height="600"></canvas>
+    <h1>おみくじを引こう！</h1>
+    <button onclick="drawOmikuji()">おみくじを引く</button>
+    <p id="result"></p>
+
     <script>
-        const canvas = document.getElementById("pachinkoCanvas");
-        const ctx = canvas.getContext("2d");
-        const balls = [];
-        const pockets = [{ x: 150, y: 550, radius: 20, points: 100 }, { x: 250, y: 550, radius: 20, points: 200 }];
-        const pegs = [];
-        let score = 0;
+        function drawOmikuji() {
+            const results = [
+                { name: "大吉", weight: 5 },
+                { name: "中吉", weight: 10 },
+                { name: "小吉", weight: 15 },
+                { name: "吉", weight: 20 },
+                { name: "末吉", weight: 20 },
+                { name: "凶", weight: 20 },
+                { name: "大凶", weight: 10 }
+            ];
 
-        function updateScore(points) {
-            score += points;
-            document.getElementById("score").innerText = score;
-        }
+            // 確率リストを作成
+            const choices = results.flatMap(item => Array(item.weight).fill(item.name));
 
-        function createPegs() {
-            for (let y = 100; y < 500; y += 50) {
-                for (let x = 100; x < 300; x += 50) {
-                    pegs.push({ x: x + (y % 100 === 0 ? 0 : 25), y: y, radius: 5 });
-                }
-            }
+            // ランダムに1つ選択
+            const result = choices[Math.floor(Math.random() * choices.length)];
+
+            // 結果を表示
+            document.getElementById("result").textContent = `結果: ${result}`;
         }
-        
-        function createBall() {
-            let startX = 100 + Math.random() * 200; // ランダムなX位置で発射
-            balls.push({ x: startX, y: 50, radius: 5, speedY: 2 + Math.random() * 2, speedX: (Math.random() - 0.5) * 2 });
-        }
-        
-        document.addEventListener("keydown", function(event) {
-            if (event.code === "Space") {
-                createBall();
-            }
-        });
-        
-        function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            pegs.forEach(peg => {
-                ctx.beginPath();
-                ctx.arc(peg.x, peg.y, peg.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "silver";
-                ctx.fill();
-                ctx.closePath();
-            });
-            
-            balls.forEach((ball, index) => {
-                ball.y += ball.speedY;
-                ball.x += ball.speedX;
-                
-                pegs.forEach(peg => {
-                    let dx = ball.x - peg.x;
-                    let dy = ball.y - peg.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < ball.radius + peg.radius) {
-                        ball.speedY *= -1;
-                    }
-                });
-                
-                balls.forEach((otherBall, otherIndex) => {
-                    if (index !== otherIndex) {
-                        let dx = ball.x - otherBall.x;
-                        let dy = ball.y - otherBall.y;
-                        let distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < ball.radius * 2) {
-                            let tempX = ball.speedX;
-                            let tempY = ball.speedY;
-                            ball.speedX = otherBall.speedX;
-                            ball.speedY = otherBall.speedY;
-                            otherBall.speedX = tempX;
-                            otherBall.speedY = tempY;
-                        }
-                    }
-                });
-                
-                ctx.beginPath();
-                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "gold";
-                ctx.fill();
-                ctx.closePath();
-                
-                pockets.forEach(pocket => {
-                    let dx = ball.x - pocket.x;
-                    let dy = ball.y - pocket.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < ball.radius + pocket.radius) {
-                        balls.splice(index, 1);
-                        updateScore(pocket.points);
-                    }
-                });
-            });
-            
-            pockets.forEach(pocket => {
-                ctx.beginPath();
-                ctx.arc(pocket.x, pocket.y, pocket.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "red";
-                ctx.fill();
-                ctx.closePath();
-            });
-            requestAnimationFrame(update);
-        }
-        
-        createPegs();
-        update();
     </script>
 </body>
 </html>
