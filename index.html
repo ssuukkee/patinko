@@ -3,49 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>おみくじ</title>
+    <title>じゃんけんゲーム</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        button {
-            font-size: 20px;
-            padding: 10px;
-        }
-        #result {
-            font-size: 30px;
-            margin-top: 20px;
-        }
+        body { text-align: center; font-family: Arial, sans-serif; }
+        h1 { font-size: 24px; }
+        .choices { margin: 20px; }
+        button { font-size: 18px; padding: 10px; margin: 5px; }
+        #result { font-size: 20px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>おみくじを引こう！</h1>
-    <button onclick="drawOmikuji()">おみくじを引く</button>
-    <p id="result"></p>
+
+    <h1>じゃんけんゲーム</h1>
+    <p>ボタンをクリックして、じゃんけんをしよう！</p>
+
+    <div class="choices">
+        <button onclick="playJanken('グー')">グー ✊</button>
+        <button onclick="playJanken('チョキ')">チョキ ✌️</button>
+        <button onclick="playJanken('パー')">パー ✋</button>
+    </div>
+
+    <p id="computer-choice">コンピュータの選択: ？</p>
+    <p id="result">結果: ？</p>
 
     <script>
-        function drawOmikuji() {
-            const results = [
-                { name: "大吉", weight: 5 },
-                { name: "中吉", weight: 10 },
-                { name: "小吉", weight: 15 },
-                { name: "吉", weight: 20 },
-                { name: "末吉", weight: 20 },
-                { name: "凶", weight: 20 },
-                { name: "大凶", weight: 10 }
-            ];
+        function playJanken(playerChoice) {
+            const choices = ["グー", "チョキ", "パー"];
+            const computerChoice = choices[Math.floor(Math.random() * choices.length)];
 
-            // 確率リストを作成
-            const choices = results.flatMap(item => Array(item.weight).fill(item.name));
+            let result;
+            if (playerChoice === computerChoice) {
+                result = "引き分け！";
+            } else if (
+                (playerChoice === "グー" && computerChoice === "チョキ") ||
+                (playerChoice === "チョキ" && computerChoice === "パー") ||
+                (playerChoice === "パー" && computerChoice === "グー")
+            ) {
+                result = "あなたの勝ち！";
+            } else {
+                result = "コンピュータの勝ち！";
+            }
 
-            // ランダムに1つ選択
-            const result = choices[Math.floor(Math.random() * choices.length)];
-
-            // 結果を表示
-            document.getElementById("result").textContent = `結果: ${result}`;
+            document.getElementById("computer-choice").innerText = `コンピュータの選択: ${computerChoice}`;
+            document.getElementById("result").innerText = `結果: ${result}`;
         }
     </script>
+
 </body>
 </html>
