@@ -1,30 +1,26 @@
-import random
-import string
-from flask import Flask, render_template, request
-
-app = Flask(__name__)
-
-def generate_password(length=12, use_digits=True, use_symbols=True):
-    """安全なパスワードを生成する関数"""
-    characters = string.ascii_letters
-    if use_digits:
-        characters += string.digits
-    if use_symbols:
-        characters += string.punctuation
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パスワード生成ツール</title>
+</head>
+<body>
+    <h2>パスワード生成ツール</h2>
+    <form method="post">
+        <label>パスワードの長さ:</label>
+        <input type="number" name="length" value="12" required>
+        <br>
+        <input type="checkbox" name="digits" checked> 数字を含める
+        <br>
+        <input type="checkbox" name="symbols" checked> 記号を含める
+        <br><br>
+        <button type="submit">生成</button>
+    </form>
     
-    password = ''.join(random.choice(characters) for _ in range(length))
-    return password
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    password = None
-    if request.method == 'POST':
-        length = int(request.form.get('length', 12))
-        use_digits = 'digits' in request.form
-        use_symbols = 'symbols' in request.form
-        password = generate_password(length, use_digits, use_symbols)
-    
-    return render_template('index.html', password=password)
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    {% if password %}
+        <h3>生成されたパスワード:</h3>
+        <p>{{ password }}</p>
+    {% endif %}
+</body>
+</html>
