@@ -15,7 +15,7 @@ def generate_password(length=12, use_digits=True, use_symbols=True):
     password = ''.join(random.choice(characters) for _ in range(length))
     return password
 
-@app.route("/", methods=["GET", "POST"])  # ここでPOSTを許可
+@app.route("/", methods=["GET", "POST"])  # ✅ ここでPOSTを許可
 def index():
     password = None
     if request.method == "POST":
@@ -28,3 +28,4 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
