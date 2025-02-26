@@ -1,53 +1,30 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>じゃんけんゲーム</title>
-    <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        h1 { font-size: 24px; }
-        .choices { margin: 20px; }
-        button { font-size: 18px; padding: 10px; margin: 5px; }
-        #result { font-size: 20px; font-weight: bold; margin-top: 20px; }
-    </style>
-</head>
-<body>
+import random
+import string
+from flask import Flask, render_template, request
 
-    <h1>じゃんけんゲーム</h1>
-    <p>ボタンをクリックして、じゃんけんをしよう！</p>
+app = Flask(__name__)
 
-    <div class="choices">
-        <button onclick="playJanken('グー')">グー ✊</button>
-        <button onclick="playJanken('チョキ')">チョキ ✌️</button>
-        <button onclick="playJanken('パー')">パー ✋</button>
-    </div>
+def generate_password(length=12, use_digits=True, use_symbols=True):
+    """安全なパスワードを生成する関数"""
+    characters = string.ascii_letters
+    if use_digits:
+        characters += string.digits
+    if use_symbols:
+        characters += string.punctuation
+    
+    password = ''.join(random.choice(characters) for _ in range(length))
+    return password
 
-    <p id="computer-choice">コンピュータの選択: ？</p>
-    <p id="result">結果: ？</p>
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    password = None
+    if request.method == 'POST':
+        length = int(request.form.get('length', 12))
+        use_digits = 'digits' in request.form
+        use_symbols = 'symbols' in request.form
+        password = generate_password(length, use_digits, use_symbols)
+    
+    return render_template('index.html', password=password)
 
-    <script>
-        function playJanken(playerChoice) {
-            const choices = ["グー", "チョキ", "パー"];
-            const computerChoice = choices[Math.floor(Math.random() * choices.length)];
-
-            let result;
-            if (playerChoice === computerChoice) {
-                result = "引き分け！";
-            } else if (
-                (playerChoice === "グー" && computerChoice === "チョキ") ||
-                (playerChoice === "チョキ" && computerChoice === "パー") ||
-                (playerChoice === "パー" && computerChoice === "グー")
-            ) {
-                result = "あなたの勝ち！";
-            } else {
-                result = "コンピュータの勝ち！";
-            }
-
-            document.getElementById("computer-choice").innerText = `コンピュータの選択: ${computerChoice}`;
-            document.getElementById("result").innerText = `結果: ${result}`;
-        }
-    </script>
-
-</body>
-</html>
+if __name__ == "__main__":
+    app.run(debug=True)
