@@ -1,22 +1,177 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <title>Password Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オセロゲーム</title>
+    <style>
+        body {
+            text-align: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 2px;
+            margin: 20px auto;
+            width: 416px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: green;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+        }
+        .black {
+            width: 40px;
+            height: 40px;
+            background-color: black;
+            border-radius: 50%;
+        }
+        .white {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
-    <h1>Generate a Secure Password</h1>
-    <form method="post">
-        <label for="length">Password Length:</label>
-        <input type="number" name="length" value="12" min="4" max="64">
-        <br>
-        <input type="checkbox" name="digits" checked> Include Numbers
-        <br>
-        <input type="checkbox" name="special_chars" checked> Include Special Characters
-        <br>
-        <button type="submit">Generate</button>
-    </form>
-    {% if password %}
-        <h2>Generated Password: {{ password }}</h2>
-    {% endif %}
+    <h1>オセロゲーム</h1>
+    <div id="board" class="board"></div>
+    <p id="turn">黒のターン</p>
+    <p id="result"></p>
+    
+    <script>
+        const board = document.getElementById("board");
+        const turnText = document.getElementById("turn");
+        const resultText = document.getElementById("result");
+        let turn = "black";
+        let boardState = Array(8).fill(null).map(() => Array(8).fill(null));
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],         [0, 1],
+            [1, -1], [1, 0], [1, 1]
+        ];
+
+        function initializeBoard() {
+            board.innerHTML = "";
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener("click", handleMove);
+                    board.appendChild(cell);
+                }
+            }
+            boardState[3][3] = "white";
+            boardState[4][4] = "white";
+            boardState[3][4] = "black";
+            boardState[4][3] = "black";
+            updateBoard();
+        }
+
+        function getValidMoves(color) {
+            let moves = [];
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if (isValidMove(row, col, color)) {
+                        moves.push({ row, col });
+                    }
+                }
+            }
+            return moves;
+        }
+
+        function isValidMove(row, col, color) {
+            row = parseInt(row, 10);
+            col = parseInt(col, 10);
+            if (boardState[row][col] !== null) return false;
+            let opponent = color === "black" ? "white" : "black";
+            for (let [dx, dy] of directions) {
+                let x = row + dx;
+                let y = col + dy;
+                let flipped = [];
+                while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                    if (boardState[x][y] === opponent) {
+                        flipped.push([x, y]);
+                    } else if (boardState[x][y] === color && flipped.length > 0) {
+                        return true;
+                    } else {
+                        break;
+                    }
+                    x += dx;
+                    y += dy;
+                }
+            }
+            return false;
+        }
+
+        function handleMove(event) {
+            if (turn !== "black") return;
+            let row = parseInt(event.target.dataset.row, 10);
+            let col = parseInt(event.target.dataset.col, 10);
+            if (!isValidMove(row, col, turn)) return;
+            boardState[row][col] = turn;
+            flipDisks(row, col, turn);
+            updateBoard();
+            turn = "white";
+            setTimeout(aiMove, 500);
+        }
+
+        function aiMove() {
+            let moves = getValidMoves("white");
+            if (moves.length === 0) {
+                turn = "black";
+                return;
+            }
+            let move = moves[Math.floor(Math.random() * moves.length)];
+            boardState[move.row][move.col] = "white";
+            flipDisks(move.row, move.col, "white");
+            updateBoard();
+            turn = "black";
+        }
+
+        function flipDisks(row, col, color) {
+            let opponent = color === "black" ? "white" : "black";
+            for (let [dx, dy] of directions) {
+                let x = row + dx;
+                let y = col + dy;
+                let flipped = [];
+                while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                    if (boardState[x][y] === opponent) {
+                        flipped.push([x, y]);
+                    } else if (boardState[x][y] === color && flipped.length > 0) {
+                        flipped.forEach(([fx, fy]) => boardState[fx][fy] = color);
+                        break;
+                    } else {
+                        break;
+                    }
+                    x += dx;
+                    y += dy;
+                }
+            }
+        }
+
+        function updateBoard() {
+            document.querySelectorAll(".cell").forEach(cell => {
+                let row = parseInt(cell.dataset.row, 10);
+                let col = parseInt(cell.dataset.col, 10);
+                cell.innerHTML = "";
+                if (boardState[row][col]) {
+                    const disc = document.createElement("div");
+                    disc.classList.add(boardState[row][col]);
+                    cell.appendChild(disc);
+                }
+            });
+        }
+
+        initializeBoard();
+    </script>
 </body>
 </html>
